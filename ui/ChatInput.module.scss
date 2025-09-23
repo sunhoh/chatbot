@@ -1,0 +1,119 @@
+@import 'variables';
+
+.inputContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: $chatbot-surface-light;
+  border-top: 1px solid $chatbot-border-light;
+  transition: background-color 0.3s, border-color 0.3s;
+
+  :global(.dark) & {
+    background-color: $chatbot-surface-dark;
+    border-top-color: $chatbot-border-dark;
+  }
+}
+
+.textarea {
+  flex-grow: 1;
+  padding: 0.625rem 0.875rem;
+  border-radius: 1.25rem;
+  background-color: $chatbot-bot-bubble-light;
+  color: $chatbot-text-light;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  min-height: 40px;
+  max-height: 120px;
+  line-height: 1.4;
+  border: 1px solid transparent; // 기본 투명 border 추가
+  transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+  overflow-y: auto; // 명시적으로 overflow 설정
+
+  :global(.dark) & {
+    background-color: $chatbot-bot-bubble-dark;
+    color: $chatbot-text-dark;
+    border-color: transparent;
+  }
+
+  &:focus {
+    border-color: $chatbot-primary-light;
+    outline: none; // outline 제거 명시
+
+    :global(.dark) & {
+      border-color: $chatbot-primary;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: $chatbot-text-secondary-light;
+
+    :global(.dark) & {
+      color: $chatbot-text-secondary-dark;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    width: 0; // 스크롤바 숨기기
+    display: none; // 완전히 숨기기
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 0;
+  }
+
+  // Firefox 스크롤바 숨기기
+  scrollbar-width: none;
+}
+
+.sendButton {
+  width: 40px;
+  height: 40px;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 50%;
+  background-color: $chatbot-primary-light;
+  color: $chatbot-user-text-light;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, transform 0.2s, opacity 0.3s;
+
+  :global(.dark) & {
+    background-color: $chatbot-primary;
+    color: $chatbot-user-text-dark;
+  }
+
+  &:hover:not(:disabled) {
+    transform: scale(1.05);
+    background-color: $chatbot-primary-hover-light;
+
+    :global(.dark) & {
+      background-color: $chatbot-primary-hover;
+    }
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+}

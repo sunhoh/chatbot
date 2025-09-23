@@ -1,0 +1,246 @@
+@import 'variables';
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.messageWrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  animation: fadeIn 0.3s ease-in-out;
+
+  &.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+
+  &.bot {
+    align-self: flex-start;
+  }
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: $chatbot-bot-bubble-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.3s;
+
+  :global(.dark) & {
+    background-color: $chatbot-bot-bubble-dark;
+  }
+
+  .user & {
+    background-color: $chatbot-primary-light;
+
+    :global(.dark) & {
+      background-color: $chatbot-primary;
+    }
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: $chatbot-text-secondary-light;
+    transition: fill 0.3s;
+
+    :global(.dark) & {
+      fill: $chatbot-text-secondary-dark;
+    }
+
+    .user & {
+      fill: $chatbot-user-text-light;
+
+      :global(.dark) & {
+        fill: $chatbot-user-text-dark;
+      }
+    }
+  }
+}
+
+.bubble {
+  max-width: 65%; // 75%에서 65%로 줄여서 더 많은 간격 확보
+  min-width: 80px;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: background-color 0.3s, color 0.3s;
+
+  .bot & {
+    background-color: $chatbot-bot-bubble-light;
+    color: $chatbot-bot-text-light;
+    border-bottom-left-radius: 0.25rem;
+    margin-right: 15%; // 오른쪽 여백 추가로 사용자 영역과 구분
+
+    :global(.dark) & {
+      background-color: $chatbot-bot-bubble-dark;
+      color: $chatbot-bot-text-dark;
+    }
+  }
+
+  .user & {
+    background-color: $chatbot-user-bubble-light;
+    color: $chatbot-user-text-light;
+    border-bottom-right-radius: 0.25rem;
+    margin-left: 15%; // 왼쪽 여백 추가로 봇 영역과 구분
+
+    :global(.dark) & {
+      background-color: $chatbot-user-bubble-dark;
+      color: $chatbot-user-text-dark;
+    }
+  }
+
+  @media (max-width: 768px) {
+    max-width: 70%; // 모바일에서도 조정
+
+    .bot & {
+      margin-right: 10%; // 모바일에서는 여백 조금 줄임
+    }
+
+    .user & {
+      margin-left: 10%; // 모바일에서는 여백 조금 줄임
+    }
+  }
+}
+
+.content {
+  line-height: 1.6;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+
+  // 마크다운 스타일
+  p {
+    margin: 0 0 0.75rem 0;
+    line-height: 1.6;
+    font-size: 0.9rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+
+  ul {
+    margin: 0.5rem 0;
+    padding-left: 1rem; // 1.5rem에서 1rem으로 줄임
+    line-height: 1.6;
+    list-style-type: disc;
+    list-style-position: outside;
+  }
+
+  ol {
+    margin: 0.5rem 0;
+    padding-left: 1rem; // 1.5rem에서 1rem으로 줄임
+    line-height: 1.6;
+    list-style-type: decimal; // disc에서 decimal로 수정 (올바른 타입)
+    list-style-position: outside;
+  }
+
+  li {
+    margin: 0.25rem 0;
+    line-height: 1.6;
+    display: list-item;
+    font-size: 0.9rem;
+
+    &::marker {
+      color: $chatbot-text-secondary-light;
+
+      :global(.dark) & {
+        color: $chatbot-text-secondary-dark;
+      }
+    }
+  }
+
+  code {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.9em;
+
+    :global(.dark) & {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  pre {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+
+    :global(.dark) & {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    code {
+      background: none;
+      padding: 0;
+    }
+  }
+
+  a {
+    color: $chatbot-primary-light;
+    text-decoration: none;
+    border-bottom: 1px solid $chatbot-primary-light;
+
+    :global(.dark) & {
+      color: $chatbot-primary;
+      border-bottom-color: $chatbot-primary;
+    }
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  // 추천 질문 스타일링
+  :global(.recommendation-question) {
+    cursor: pointer;
+    color: $chatbot-primary-light;
+    text-decoration: underline;
+    transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+    display: list-item !important;
+    list-style-type: disc !important;
+    list-style-position: outside; // inside에서 outside로 변경
+    // 기본 상태에서 패딩 설정하여 hover 시 레이아웃 시프트 방지
+    padding: 2px 6px;
+    margin: 2px 0 2px 0; // 음수 마진 제거
+    border-radius: 4px;
+    background-color: transparent;
+
+    &:hover {
+      opacity: 0.8;
+      background-color: rgba(0, 123, 255, 0.08);
+      text-decoration: none;
+      // padding과 margin은 변경하지 않음 (레이아웃 시프트 방지)
+    }
+
+    :global(.dark) & {
+      color: $chatbot-primary;
+
+      &:hover {
+        background-color: rgba(200, 255, 0, 0.08);
+      }
+    }
+  }
+}
