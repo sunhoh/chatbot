@@ -1,8 +1,8 @@
 import React from 'react'
 
 interface Message {
-  id: number
-  text: string
+  id: string
+  content: string
   sender: 'user' | 'bot'
   timestamp: Date
 }
@@ -23,7 +23,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             : 'bg-white text-gray-800 border border-gray-200'
         }`}
       >
-        <p className="text-sm">{message.text}</p>
+        <p className="text-sm">{message.content}</p>
         <p
           className={`text-xs mt-1 ${
             isUser ? 'text-blue-200' : 'text-gray-500'
