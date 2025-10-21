@@ -17,7 +17,6 @@ export default function Home() {
       </header>
 
       <main className="flex-1 p-4 overflow-y-auto">
-        <div>test commit</div>
         <div className="max-w-3xl mx-auto">
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
