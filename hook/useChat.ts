@@ -1,22 +1,25 @@
 import { useState, useCallback, useEffect } from 'react';
+import type { Suggestion } from '@/types/tenant.type';
 
 interface Message {
   id: string
   content: string
   sender: 'user' | 'bot'
   timestamp: Date
+  link?: string
 }
 
-interface UseGenAIChatOptions {
+interface UseChatOptions {
   tenantKey?: string
 }
 
-export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
+export const useChat = (options: UseChatOptions) => {
   const { tenantKey } = options;
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[] | undefined>(undefined);
 
   useEffect(()=>{
     const initChat = async () => {
@@ -24,7 +27,7 @@ export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
         // -----------------------------------
         // Call backend API to initialize chat
         // -----------------------------------
-        const response = await fetch('/api/genai', {
+        const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -39,14 +42,16 @@ export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
         const data = await response.json();
 
         // Add welcome message
-        setMessages([
-          {
-            id: 'welcome',
-            content: data.welcomeMessage,
-            sender: 'bot',
-            timestamp: new Date(),
-          },
-        ]);
+        if (data.welcomeMessage) {
+          setMessages([
+            {
+              id: 'welcome',
+              content: data.welcomeMessage,
+              sender: 'bot',
+              timestamp: new Date(),
+            },
+          ]);
+        }
         setError(null);
 
       }catch(error){
@@ -73,6 +78,7 @@ export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
       setMessages(prev => [...prev, userMessage]);
       setIsLoading(true);
       setError(null);
+      setSuggestions(undefined);
 
       try {
         const startTime = Date.now();
@@ -80,7 +86,7 @@ export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
         // -----------------------------------
         // Call backend API for streaming response
         // -----------------------------------
-        const response = await fetch('/api/genai', {
+        const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -134,6 +140,19 @@ export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
                   throw new Error(parsed.error);
                 }
 
+                if (parsed.done) {
+                  setSuggestions(parsed.suggestions);
+                  if (parsed.link) {
+                    setMessages(prev => {
+                      const next = [...prev];
+                      const last = next[next.length - 1];
+                      if (last?.id === botMessage.id) last.link = parsed.link;
+                      return next;
+                    });
+                  }
+                  break;
+                }
+
                 if (parsed.text) {
                   fullResponse += parsed.text;
                   setMessages(prev => {
@@ -147,6 +166,7 @@ export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
                 }
               } catch (e) {
                 // Skip invalid JSON
+                console.log('eee', e)
               }
             }
           }
@@ -192,5 +212,6 @@ export const useGenAIChat = (options: UseGenAIChatOptions = {}) => {
     isLoading,
     isInitializing,
     error,
+    suggestions,
   };
 }

@@ -1,39 +1,54 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { getTenantConfig } from '@/utils/tenant.utils';
+import { runPipeline } from '@/server';
+import type { BotResponse } from '@/server/utils/response';
+import type { Suggestion } from '@/types/tenant.type';
+
+function extractText(res: BotResponse): string {
+  const output = res.template.outputs[0];
+  if (output?.simpleText) return output.simpleText.text;
+  if (output?.basicCard) return `${output.basicCard.title}\n${output.basicCard.description}`;
+  return '';
+}
+
+function cannedSseResponse(text: string, suggestions?: Suggestion[], link?: string): NextResponse {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, suggestions, link })}\n\n`));
+      controller.close();
+    },
+  });
+  return new NextResponse(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { message } = await request.json()
+    const { message, isInitialRequest, tenantKey, buttonPayload } = await request.json();
 
-    // 간단한 응답 로직 (실제로는 AI API나 더 복잡한 로직을 사용할 수 있습니다)
-    const replies = [
-      '흥미로운 질문이네요! 더 자세히 말씀해 주시겠어요?',
-      '네, 이해했습니다. 어떤 부분이 가장 궁금하신가요?',
-      '좋은 생각이에요! 그것에 대해 더 이야기해 볼까요?',
-      '알겠습니다. 다른 도움이 필요하신가요?',
-      '그렇군요. 더 구체적으로 설명해 주실 수 있나요?',
-    ]
-
-    // 메시지 길이에 따라 다른 응답
-    let reply = ''
-    if (message.toLowerCase().includes('안녕')) {
-      reply = '안녕하세요! 오늘은 어떻게 도와드릴까요?'
-    } else if (message.toLowerCase().includes('도움')) {
-      reply = '네, 기꺼이 도와드리겠습니다! 무엇이 필요하신가요?'
-    } else if (message.toLowerCase().includes('감사')) {
-      reply = '천만에요! 도움이 되었다니 기쁩니다.'
-    } else {
-      reply = replies[Math.floor(Math.random() * replies.length)]
+    if (isInitialRequest) {
+      const tenant = getTenantConfig(tenantKey);
+      return NextResponse.json({ success: true, welcomeMessage: tenant.welcomeMessage });
     }
 
-    // 약간의 지연을 추가하여 더 자연스럽게
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    if (!message || typeof message !== 'string') {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
 
-    return NextResponse.json({ reply })
+    const userId = request.headers.get('x-forwarded-for') ?? 'anonymous';
+    const { response, suggestions, link } = await runPipeline({ message, userId, buttonPayload, tenantKey });
+    const text = extractText(response);
+
+    return cannedSseResponse(text, suggestions, link);
   } catch (error) {
-    console.error('Chat API error:', error)
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
-    )
+    console.error('API error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

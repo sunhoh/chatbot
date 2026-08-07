@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import genAIClient from '@/utils/genAIClient';
+import aIClient from '@/utils/aIClient';
 import { loadKnowledgeBase, loadRules, createSystemInstruction } from '@/utils/knowledgeLoader';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
@@ -42,14 +42,14 @@ async function initializeChat() {
     throw new Error('No API keys configured');
   }
 
-  genAIClient.initialize(genaiKeys);
+  aIClient.initialize(genaiKeys);
   const model = 'gemini-2.0-flash-exp';
 
   const knowledgeBase = await loadKnowledgeBaseServer();
   const rules = await loadRulesServer();
   const systemInstruction = createSystemInstruction(knowledgeBase, rules);
 
-  await genAIClient.createChat(systemInstruction, model);
+  await aIClient.createChat(systemInstruction, model);
   chatInitialized = true;
 }
 
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const responseStream = await genAIClient.sendMessageStream(message);
+          const responseStream = await aIClient.sendMessageStream(message);
 
           for await (const chunk of responseStream) {
             const text = chunk.text || '';
